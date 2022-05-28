@@ -1,0 +1,16 @@
+{
+    "name": "root/composer_dz",
+    "autoload": {
+        "psr-4": {
+            "Controllers\\": "src/Controllers"
+            
+        }
+    },
+    "require": {
+   "twig/twig": "^3.3",
+        "monolog/monolog": "^2.6",
+      "ext-json": "*"
+
+    }
+}
+    
