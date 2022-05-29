@@ -7,11 +7,11 @@ use Monolog\Logger;
 
 class messengerController
 {
-    private Environment $twig;
-    private Logger $log;
-    private StreamHandler $messengerHandler;
+    private $twig;
+    private $log;
+    private $messengerHandler;
 
-    public function __construct(Environment $twig)
+    public function __construct($twig)
     {
         $this->twig = $twig;
         $this->log = new Logger('action');
