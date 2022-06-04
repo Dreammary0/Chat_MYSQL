@@ -1,6 +1,5 @@
 <?php
 
-
 use Controllers\messengerController;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -17,6 +16,7 @@ $userHandler = new StreamHandler('mes.log', Logger::INFO);
 $log->pushHandler($userHandler);
 $twig = new Environment($loader);
 $controller = new messengerController($twig, $log);
+
 date_default_timezone_set('Asia/Vladivostok');
 
 
@@ -30,7 +30,13 @@ foreach($results as $result){
 }
 
 
-$controller-> show_messages();
+$sql_mes = 'SELECT * from mess';
+$stmt2 = $connection->prepare($sql_mes);
+$stmt2->execute();
+$mes_sql = $stmt2->fetchAll();
+$controller->ShowMes($mes_sql);
+
+
 if (isset($_GET['logs'])) {
     echo("Список логов: ");
     $file = file_get_contents('mes.log');
@@ -46,15 +52,13 @@ if (isset($_GET['login'])&&isset($_GET['password']) || (isset($_GET['logs'])) ) 
      if ($users[$usr]!="" && $users[$usr]==$pwd || $usr=="default"){
         $login_successful = true; 
         echo ("Авторизирован как   ");
-        echo($_GET['login']);
+        echo('<b>'.$_GET['login'].'</b>');
         $log->info('User name is ', ['who' => $usr]);
     }
     else if (!(isset($_GET['logs']))){
         echo "<p>";
         echo("Неверный логин или пароль!");
         $log->error('no login or passzord!');
-
-        
     }
 }
 
@@ -64,11 +68,16 @@ $controller-> mesform();
 }
 
  if (isset($_GET['message'])){
-    $controller->add_message_to_file($_GET['message'], $_COOKIE['login']) ; 
+    $controller->add_message_to_file($_GET['message'], $_COOKIE['login'], $connection);
     header('Refresh: 0; url=index.php'); 
     
+    
+    
  if (isset($_GET['clear'])) {
-    file_put_contents('mes.json', '{"messages":[]}');
+    $sql = 'DELETE FROM mess';
+    $stmt3 = $connection->prepare($sql);
+    $stmt3->execute();
+    
     $log->info('Chat is cleared');
 }
    

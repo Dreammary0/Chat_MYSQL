@@ -4,6 +4,7 @@ namespace Controllers;
 use Twig\Environment;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use PDO;
 
 class messengerController
 {
@@ -24,25 +25,32 @@ function mesform(){
     echo $this->twig->render('mesform.html.twig');
     }
     
-function show_messages(){ 
-     $content = json_decode(file_get_contents("mes.json"));
-        foreach($content->messages as $message){
-            echo "<p>";
-            echo "$message->date      $message->login:     <b>$message->message</b>";
-            echo "</p>";        }
+
+
+function add_message_to_file($message,$log, $conn){
+        if ($message !== '') {
+            $now = date("Y-m-d H:i:s");
+            $sql = 'insert into mess (user_date, user_login, user_message) values (:now, :login, :message)';
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam('now', $now, PDO::PARAM_STR);
+            $stmt->bindParam('login', $log, PDO::PARAM_STR);
+            $stmt->bindParam('message', $message, PDO::PARAM_STR);
+            $stmt->execute();
+            $this->log->pushHandler($this->messengerHandler);
+            $this->log->info('New message', ['user' => $log, 'send' => $message]);
+            
+        }
     }
     
-function add_message_to_file($message, $log){
- $content = json_decode(file_get_contents("mes.json"));
-        $message_object = (object) [
-            'date' => date('d.m.Y H:i'),
-            'login' => $log,
-            'message' => $message];
-        $content->messages[] = $message_object;
-        file_put_contents("mes.json", json_encode($content));  
-        $this->log->pushHandler($this->messengerHandler);
-        $this->log->info('New message', ['user' => $log, 'send' => $message]);
-
+    
+    function ShowMes($mess){
+       foreach ($mess as $message){
+          
+          echo '<p style="color: blue">'.$message['user_date']. "   ".'<b style="color: black">' .
+          $message['user_login'].":   ".'</b>'. '<big style="color: black">'.
+          $message['user_message'].'</big>'.'</p>' ;
+          
 }
+    }
     
 }
